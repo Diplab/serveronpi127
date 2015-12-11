@@ -35,11 +35,11 @@ public class RpiSmoke {
 															// going to take in
 															// normal operation
 	private static final int READ_SAMPLE_TIMES = 60; // define the time
-													// interal(in
-													// milisecond)
-													// between each samples
-													// in
-													// normal operation
+														// interal(in
+														// milisecond)
+														// between each samples
+														// in
+														// normal operation
 
 	/********************** Application Related Macros **********************************/
 	private static final int GAS_LPG = 0;
@@ -71,7 +71,7 @@ public class RpiSmoke {
 	// to the original curve.
 	// data format:{ x, y, slope}; point1: (lg200, 0.53), point2: (lg10000,
 	// -0.22)
-	private static double Ro = 1.1560906512450397; // Ro is initialized to 10
+	private static double Ro = 0.6160547610346696; // Ro is initialized to 10
 													// kilo ohms
 
 	static {
@@ -80,12 +80,11 @@ public class RpiSmoke {
 
 	public static void main(String[] args) throws InterruptedException {
 
-		double mqCalibration = MQCalibration(MQ_PIN);
-		System.out.println(mqCalibration);
-		Ro = mqCalibration;
+		MQCalibration();
+
 		while (true) {
 			double readadc_MQ2 = readadc_MQ2(MQ_PIN) / 1023 * 5;
-			System.out.format("%fV, %fppm/n", readadc_MQ2, get());
+			System.out.format("%fV, %fppm\n", readadc_MQ2, get());
 			Thread.sleep(2500);
 		}
 	}
@@ -119,13 +118,13 @@ public class RpiSmoke {
 	 * RO_CLEAN_AIR_FACTOR. RO_CLEAN_AIR_FACTOR is about 10, which differs
 	 * slightly between different sensors.
 	 ************************************************************************************/
-	static double MQCalibration(int mq_pin) {
+	public static double MQCalibration() {
 		int i;
 		double val = 0;
 
 		for (i = 0; i < CALIBARAION_SAMPLE_TIMES; i++) { // take multiple
 															// samples
-			val += MQResistanceCalculation(readadc_MQ2(mq_pin));
+			val += MQResistanceCalculation(readadc_MQ2(MQ_PIN));
 			try {
 				Thread.sleep(CALIBRATION_SAMPLE_INTERVAL);
 			} catch (InterruptedException e) {
@@ -139,6 +138,9 @@ public class RpiSmoke {
 											// according to the chart in the
 											// datasheet
 
+		Ro = val;
+		System.out.format("Calibration r0 = [%10f]\n", val);
+
 		return val;
 	}
 
@@ -150,9 +152,9 @@ public class RpiSmoke {
 	 * gas. The sample times and the time interval between samples could be
 	 * configured by changing the definition of the macros.
 	 ************************************************************************************/
-	static double MQRead(int mq_pin) {
+	static double MQRead() {
 
-		double rs = MQResistanceCalculation(readadc_MQ2(mq_pin));
+		double rs = MQResistanceCalculation(readadc_MQ2(MQ_PIN));
 
 		for (int i = 1; i < READ_SAMPLE_TIMES; i++) {
 			try {
@@ -160,7 +162,7 @@ public class RpiSmoke {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			double rs_temp = MQResistanceCalculation(readadc_MQ2(mq_pin));
+			double rs_temp = MQResistanceCalculation(readadc_MQ2(MQ_PIN));
 			rs = (rs > rs_temp) ? rs : rs_temp;
 		}
 		// int i;
@@ -178,6 +180,7 @@ public class RpiSmoke {
 		//
 		// rs = rs / READ_SAMPLE_TIMES;
 
+		System.out.format("MQRead Rs =  %10f \n", rs);
 		return rs;
 	}
 
@@ -215,10 +218,18 @@ public class RpiSmoke {
 
 	public static double get() {
 
-		double Rs = MQRead(MQ_PIN);
+		double Rs = MQRead();
 
 		return MQGetGasPercentage(Rs / Ro, GAS_SMOKE);
 
+	}
+
+	public static double getRo() {
+		return Ro;
+	}
+
+	public static void setRo(double ro) {
+		Ro = ro;
 	}
 
 }

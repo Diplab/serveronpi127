@@ -6,6 +6,7 @@ import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
 import javax.xml.ws.Endpoint;
 
+import com.diplab.device.RpiSmoke;
 import com.diplab.service.CO2Service;
 import com.diplab.service.COService;
 import com.diplab.service.SmokeService;
@@ -42,6 +43,15 @@ public class Device127 {
 	@WebMethod
 	public double readTemperature() {
 		return temperatureService.readTemperature();
+	}
+
+	@WebMethod
+	public void setRo(double ro) {
+		RpiSmoke.setRo(ro);
+	}
+
+	public double calibration() {
+		return RpiSmoke.MQCalibration();
 	}
 
 	public static void main(String[] args) {
