@@ -35,18 +35,20 @@ public class Device127 {
 	}
 
 	@WebMethod
-	public double getSmokePpm() {
+	public double getSmokePpm() throws InterruptedException {
 		return smokeService.getSmokePpm();
 	}
-	
+
 	@WebMethod
 	public double readTemperature() {
 		return temperatureService.readTemperature();
 	}
 
 	public static void main(String[] args) {
+		Device127 implementor = new Device127();
+		((Thread) implementor.smokeService).start();
 		Endpoint.publish("http://0.0.0.0:9005/webservice/Device127",
-				new Device127());
+				implementor);
 
 		System.out.println("open webservice127");
 
