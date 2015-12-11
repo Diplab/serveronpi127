@@ -30,11 +30,11 @@ public class RpiSmoke {
 																	// samples
 																	// in the
 	// cablibration phase
-	private static final long READ_SAMPLE_INTERVAL = 600; // define how many
+	private static final long READ_SAMPLE_INTERVAL = 50; // define how many
 															// samples you are
 															// going to take in
 															// normal operation
-	private static final int READ_SAMPLE_TIMES = 5; // define the time
+	private static final int READ_SAMPLE_TIMES = 60; // define the time
 													// interal(in
 													// milisecond)
 													// between each samples
@@ -155,6 +155,11 @@ public class RpiSmoke {
 		double rs = MQResistanceCalculation(readadc_MQ2(mq_pin));
 
 		for (int i = 1; i < READ_SAMPLE_TIMES; i++) {
+			try {
+				Thread.sleep(READ_SAMPLE_INTERVAL);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			double rs_temp = MQResistanceCalculation(readadc_MQ2(mq_pin));
 			rs = (rs > rs_temp) ? rs : rs_temp;
 		}
